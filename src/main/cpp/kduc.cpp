@@ -25,5 +25,70 @@
  */
 
 #include "kduc.h"
-#include "kdu_stripe_compressor.h"
-#include "kdu_stripe_decompressor.h"
+#include <vector>
+
+/**
+ *  kdu_stripe_decompressor
+ */
+
+kdu_stripe_decompressor* kdu_stripe_decompressor_new() {
+  return new kdu_supp::kdu_stripe_decompressor();
+}
+
+void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec) {
+  delete dec;
+}
+
+void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
+                                   kdu_codestream* cs) {
+  dec->start(*cs);
+}
+
+void kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
+                                         unsigned char* pixels,
+                                         const int* stripe_heights) {
+  dec->pull_stripe(pixels, stripe_heights);
+}
+
+void kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
+  dec->finish();
+}
+
+/**
+ *  kdu_codestream
+ */
+
+kdu_codestream* kdu_codestream_create_from_source(kdu_compressed_source* source) {
+  kdu_supp::kdu_codestream* cs = new kdu_supp::kdu_codestream();
+
+  cs->create(source);
+
+  return cs;
+}
+
+void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int *height, int *width) {
+  kdu_core::kdu_dims dims;
+  cs->get_dims(comp_idx, dims);
+  *height = dims.size.y;
+  *width = dims.size.x;
+}
+
+int kdu_codestream_get_num_components(kdu_codestream* cs) {
+  return cs->get_num_components();
+}
+
+void kdu_codestream_delete(kdu_codestream* cs) {
+  delete cs;
+}
+
+/**
+ *  kdu_compressed_source_buffered
+ */
+
+kdu_compressed_source* kdu_compressed_source_buffered_create(const unsigned char* cs, size_t len) {
+  return new kdu_core::kdu_compressed_source_buffered((kdu_core::kdu_byte*) cs, len);
+}
+
+void kdu_compressed_source_buffered_delete(kdu_compressed_source* cs) {
+  delete cs;
+}

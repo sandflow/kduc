@@ -24,25 +24,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef KDUC_H
+#define KDUC_H
+
+#include <stdint.h>
+
 #ifdef __cplusplus
-extern "C"
-{
+
+#include "kdu_stripe_compressor.h"
+#include "kdu_stripe_decompressor.h"
+
+typedef kdu_supp::kdu_stripe_decompressor kdu_stripe_decompressor;
+typedef kdu_supp::kdu_codestream kdu_codestream;
+typedef kdu_supp::kdu_compressed_source kdu_compressed_source;
+
+extern "C" {
+
+#else
+
+typedef struct kdu_stripe_decompressor kdu_stripe_decompressor;
+typedef struct kdu_codestream kdu_codestream;
+typedef struct kdu_compressed_source kdu_compressed_source;
+
 #endif
 
-  typedef void *kdu_stripe_compressor;
+/**
+ * kdu_codestream
+ */
 
-  kdu_stripe_compressor *new_kdu_stripe_compressor();
-  void delete_kdu_stripe_compressor(kdu_stripe_compressor *c);
-  void kdu_stripe_compressor_start(kdu_stripe_compressor *c);
-  void kdu_stripe_compressor_push_stripe(const uint8* pixels, int* stripe_heights);
-  void kdu_finish();
+kdu_codestream* kdu_codestream_create_from_source(kdu_compressed_source* source);
+void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int *height, int *width);
+int kdu_codestream_get_num_components(kdu_codestream* cs);
+void kdu_codestream_delete(kdu_codestream* cs);
 
-  typedef void *kdu_stripe_decompressor;
+/**
+ * kdu_compressed_source_buffered
+ */
 
-  kdu_stripe_decompressor *new_kdu_stripe_decompressor();
-  void delete_kdu_stripe_decompressor(kdu_stripe_decompressor *d);
-  void kdu_stripe_decompressor_start(kdu_stripe_decompressor *d);
+kdu_compressed_source* kdu_compressed_source_buffered_create(const unsigned char* cs, size_t len);
+void kdu_compressed_source_buffered_delete(kdu_compressed_source* cs);
+
+/**
+ * kdu_stripe_decompressor
+ */
+
+kdu_stripe_decompressor* kdu_stripe_decompressor_new();
+void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec);
+void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
+                                   kdu_codestream* cs);
+void kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
+                                         unsigned char* pixels,
+                                         const int* stripe_heights);
+void kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
