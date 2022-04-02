@@ -85,7 +85,7 @@ void kdu_codestream_delete(kdu_codestream* cs) {
  *  kdu_compressed_source_buffered
  */
 
-kdu_compressed_source* kdu_compressed_source_buffered_create(const unsigned char* cs, size_t len) {
+kdu_compressed_source* kdu_compressed_source_buffered_new(const unsigned char* cs, size_t len) {
   return new kdu_core::kdu_compressed_source_buffered((kdu_core::kdu_byte*) cs, len);
 }
 

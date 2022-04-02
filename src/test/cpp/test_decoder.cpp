@@ -34,14 +34,14 @@ int main(int argc, char** argv) {
   int num_comps;
   std::vector<uint8_t> pixels;
 
-  std::fstream j2c_file("counter-00000.j2c", std::ios::binary);
+  std::ifstream j2c_file("resources/counter-00000.j2c", std::ifstream::ate | std::ifstream::in | std::ifstream::binary);
   std::streamsize size = j2c_file.tellg();
   j2c_file.seekg(0, std::ios::beg);
 
   std::vector<unsigned char> j2c_buffer(size);
   j2c_file.read((char*)j2c_buffer.data(), size);
 
-  kdu_compressed_source* source = kdu_compressed_source_buffered_create(
+  kdu_compressed_source* source = kdu_compressed_source_buffered_new(
       j2c_buffer.data(), j2c_buffer.size());
 
   kdu_codestream* cs = kdu_codestream_create_from_source(source);
@@ -61,4 +61,12 @@ int main(int argc, char** argv) {
   kdu_stripe_decompressor_pull_stripe(d, pixels.data(), stripe_heights);
 
   kdu_stripe_decompressor_finish(d);
+
+  kdu_stripe_decompressor_delete(d);
+
+  kdu_codestream_delete(cs);
+
+  kdu_compressed_source_buffered_delete(source);
+
+  return 0;
 }
