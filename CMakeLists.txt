@@ -23,13 +23,15 @@ if(NOT KDU_AUX_LIBRARY)
   message(FATAL_ERROR "Kakadu auxiliary library not found.")
 endif()
 
-
 # Wrapper library
 
 include_directories(src/main/cpp)
 
 add_library(kduc SHARED src/main/cpp/kduc.cpp)
 target_link_libraries(kduc ${KDU_LIBRARY} ${KDU_AUX_LIBRARY} pthread ${CMAKE_DL_LIBS})
+
+install(TARGETS kduc LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(FILES src/main/cpp/kduc.h DESTINATION include)
 
 # smoke tests
 
