@@ -49,14 +49,14 @@ void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
   dec->start(*cs);
 }
 
-void kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
+int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
                                          unsigned char* pixels,
                                          const int* stripe_heights) {
-  dec->pull_stripe(pixels, stripe_heights);
+  return !dec->pull_stripe(pixels, stripe_heights);
 }
 
-void kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
-  dec->finish();
+int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
+  return !dec->finish();
 }
 
 /**

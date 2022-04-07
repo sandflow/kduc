@@ -72,10 +72,10 @@ int kdu_stripe_decompressor_new(kdu_stripe_decompressor** out);
 void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec);
 void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
                                    kdu_codestream* cs);
-void kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
+int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
                                          unsigned char* pixels,
                                          const int* stripe_heights);
-void kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
+int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
 
 #ifdef __cplusplus
 }
