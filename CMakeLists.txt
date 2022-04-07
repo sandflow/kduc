@@ -48,3 +48,13 @@ foreach(UNIT_TEST_PATH ${UNIT_TESTS} )
     target_link_libraries(${UNIT_TEST_NAME} kduc)
     add_test(${UNIT_TEST_NAME} ${UNIT_TEST_NAME} WORKINGDIRECTORY "${CMAKE_BINARY_DIR}")
 endforeach(UNIT_TEST_PATH ${UNIT_TESTS})
+
+file(GLOB_RECURSE UNIT_TESTS src/test/c/*.c )
+file(COPY "src/test/resources" DESTINATION "${CMAKE_BINARY_DIR}")
+
+foreach(UNIT_TEST_PATH ${UNIT_TESTS})
+    get_filename_component(UNIT_TEST_NAME ${UNIT_TEST_PATH} NAME_WE)
+    add_executable(${UNIT_TEST_NAME} ${UNIT_TEST_PATH} )
+    target_link_libraries(${UNIT_TEST_NAME} kduc ${KDU_LIBRARY} ${KDU_AUX_LIBRARY} stdc++ m)
+    add_test(${UNIT_TEST_NAME} ${UNIT_TEST_NAME} WORKINGDIRECTORY "${CMAKE_BINARY_DIR}")
+endforeach(UNIT_TEST_PATH ${UNIT_TESTS})
