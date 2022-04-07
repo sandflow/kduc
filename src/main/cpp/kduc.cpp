@@ -31,8 +31,13 @@
  *  kdu_stripe_decompressor
  */
 
-kdu_stripe_decompressor* kdu_stripe_decompressor_new() {
-  return new kdu_supp::kdu_stripe_decompressor();
+int kdu_stripe_decompressor_new(kdu_stripe_decompressor **out) {
+  try {
+    *out = new kdu_supp::kdu_stripe_decompressor();
+  } catch (...) {
+    return 1;
+  }
+  return 0;
 }
 
 void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec) {
@@ -58,12 +63,15 @@ void kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
  *  kdu_codestream
  */
 
-kdu_codestream* kdu_codestream_create_from_source(kdu_compressed_source* source) {
-  kdu_supp::kdu_codestream* cs = new kdu_supp::kdu_codestream();
+int kdu_codestream_create_from_source(kdu_compressed_source *source, kdu_codestream **out) {
+  try {
+    *out = new kdu_supp::kdu_codestream();
 
-  cs->create(source);
-
-  return cs;
+    (*out)->create(source);
+  } catch (...) {
+    return 1;
+  }
+  return 0;
 }
 
 void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int *height, int *width) {
@@ -85,8 +93,13 @@ void kdu_codestream_delete(kdu_codestream* cs) {
  *  kdu_compressed_source_buffered
  */
 
-kdu_compressed_source* kdu_compressed_source_buffered_new(const unsigned char* cs, size_t len) {
-  return new kdu_core::kdu_compressed_source_buffered((kdu_core::kdu_byte*) cs, len);
+int kdu_compressed_source_buffered_new(const unsigned char *cs, const unsigned long int len, kdu_compressed_source **out) {
+  try {
+    *out = new kdu_core::kdu_compressed_source_buffered((kdu_core::kdu_byte *) cs, len);
+  } catch (...) {
+    return 1;
+  }
+  return 0;
 }
 
 void kdu_compressed_source_buffered_delete(kdu_compressed_source* cs) {
