@@ -32,6 +32,11 @@ int main(int argc, char** argv) {
   int height;
   int width;
   int num_comps;
+
+  kdu_compressed_source* source;
+  kdu_codestream* cs;
+  kdu_stripe_decompressor* d;
+
   std::vector<uint8_t> pixels;
 
   std::ifstream j2c_file("resources/counter-00000.j2c", std::ifstream::ate | std::ifstream::in | std::ifstream::binary);
@@ -41,16 +46,15 @@ int main(int argc, char** argv) {
   std::vector<unsigned char> j2c_buffer(size);
   j2c_file.read((char*)j2c_buffer.data(), size);
 
-  kdu_compressed_source* source = kdu_compressed_source_buffered_new(
-      j2c_buffer.data(), j2c_buffer.size());
+  kdu_compressed_source_buffered_new(j2c_buffer.data(), j2c_buffer.size(), &source);
 
-  kdu_codestream* cs = kdu_codestream_create_from_source(source);
+  kdu_codestream_create_from_source(source, &cs);
 
   kdu_codestream_get_size(cs, 0, &height, &width);
 
   num_comps = kdu_codestream_get_num_components(cs);
 
-  kdu_stripe_decompressor* d = kdu_stripe_decompressor_new();
+  kdu_stripe_decompressor_new(&d);
 
   pixels.resize(width * height * num_comps);
 

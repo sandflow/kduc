@@ -28,7 +28,7 @@ endif()
 include_directories(src/main/cpp)
 
 add_library(kduc SHARED src/main/cpp/kduc.cpp)
-target_link_libraries(kduc ${KDU_LIBRARY} ${KDU_AUX_LIBRARY} pthread ${CMAKE_DL_LIBS})
+target_link_libraries(kduc ${KDU_LIBRARY} ${KDU_AUX_LIBRARY} pthread ${CMAKE_DL_LIBS} stdc++ m)
 
 install(TARGETS kduc LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 install(FILES src/main/cpp/kduc.h DESTINATION include)
@@ -39,7 +39,7 @@ enable_testing()
 
 include(CTest)
 
-file(GLOB_RECURSE UNIT_TESTS src/test/cpp/*.cpp )
+file(GLOB UNIT_TESTS src/test/cpp/*.cpp src/test/c/*.c)
 file(COPY "src/test/resources" DESTINATION "${CMAKE_BINARY_DIR}")
 
 foreach(UNIT_TEST_PATH ${UNIT_TESTS} )
