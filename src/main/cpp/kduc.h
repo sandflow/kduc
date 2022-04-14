@@ -83,7 +83,7 @@ typedef struct siz_params kdu_siz_params;
  */
 
 int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestream** out);
-void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int *height, int *width);
+void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int* height, int* width);
 int kdu_codestream_get_num_components(kdu_codestream* cs);
 
 int kdu_codestream_create_from_target(mem_compressed_target* target, kdu_siz_params* sz, kdu_codestream** cs);
@@ -104,7 +104,7 @@ void kdu_compressed_source_buffered_delete(kdu_compressed_source* cs);
 
 int kdu_compressed_target_mem_new(mem_compressed_target** target);
 void kdu_compressed_target_mem_delete(mem_compressed_target* target);
-void kdu_compressed_target_bytes(mem_compressed_target* target, unsigned char **data, int *sz);
+void kdu_compressed_target_bytes(mem_compressed_target* target, unsigned char** data, int* sz);
 
 /**
  * kdu_stripe_decompressor
@@ -115,8 +115,8 @@ void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec);
 void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
                                    kdu_codestream* cs);
 int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
-                                         unsigned char* pixels,
-                                         const int* stripe_heights);
+                                        unsigned char* pixels,
+                                        const int* stripe_heights);
 int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
 
 /**
@@ -126,10 +126,10 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
 int kdu_stripe_compressor_new(kdu_stripe_compressor** enc);
 void kdu_stripe_compressor_delete(kdu_stripe_compressor* enc);
 void kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
-                                   kdu_codestream* cs);
+                                 kdu_codestream* cs);
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
-                                         unsigned char* pixels,
-                                         const int* stripe_heights);
+                                      unsigned char* pixels,
+                                      const int* stripe_heights);
 int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc);
 
 /**
