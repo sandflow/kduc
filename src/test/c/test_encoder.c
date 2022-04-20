@@ -15,6 +15,8 @@ int main(void) {
   kdu_stripe_compressor *enc;
   kdu_siz_params *siz;
 
+  unsigned char *buf;
+  int buf_sz;
 
   /* create image */
 
@@ -31,7 +33,7 @@ int main(void) {
   if (ret)
     return ret;
 
-  kdu_siz_params_set_num_components(siz, 3);
+  kdu_siz_params_set_num_components(siz, num_comps);
   kdu_siz_params_set_precision(siz, 0, 8);
   kdu_siz_params_set_size(siz, 0, height, width);
   kdu_siz_params_set_signed(siz, 0, 0);
@@ -64,12 +66,24 @@ int main(void) {
 
   int stop = 0;
   while (!stop) {
-    stop = kdu_stripe_compressor_push_stripe(enc, &pixels[0], stripe_heights);
+    stop = kdu_stripe_compressor_push_stripe(enc, pixels, stripe_heights);
   }
 
   ret = kdu_stripe_compressor_finish(enc);
   if (ret)
     return ret;
+
+  kdu_compressed_target_bytes(target, &buf, &buf_sz);
+
+  if (buf_sz == 0)
+    return 1;
+
+  FILE *j2c_fd = fopen("test_encoder.j2c", "wb");
+
+  if ((fwrite(buf, 1, buf_sz, j2c_fd) != buf_sz))
+    return 1;
+
+  fclose(j2c_fd);
 
   kdu_stripe_compressor_delete(enc);
 
