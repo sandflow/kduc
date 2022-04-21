@@ -60,7 +60,11 @@ int main(int argc, char** argv) {
 
   int stripe_heights[4] = {height, height, height, height};
 
-  kdu_stripe_decompressor_start(d, cs);
+  kdu_stripe_decompressor_options opts;
+
+  kdu_stripe_decompressor_options_init(&opts);
+
+  kdu_stripe_decompressor_start(d, cs, &opts);
 
   kdu_stripe_decompressor_pull_stripe(d, pixels.data(), stripe_heights);
 

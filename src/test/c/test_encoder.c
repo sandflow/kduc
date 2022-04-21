@@ -60,9 +60,13 @@ int main(void) {
   if (ret)
     return ret;
 
+  kdu_stripe_compressor_options opts;
+
+  kdu_stripe_compressor_options_init(&opts);
+
   int stripe_heights[3] = {height, height, height};
 
-  kdu_stripe_compressor_start(enc, cs);
+  kdu_stripe_compressor_start(enc, cs, &opts);
 
   int stop = 0;
   while (!stop) {

@@ -31,6 +31,13 @@
  *  kdu_stripe_decompressor
  */
 
+void kdu_stripe_decompressor_options_init(kdu_stripe_decompressor_options *opts) {
+  opts->force_precise = 0;
+  opts->want_fastest = 0;
+  opts->reduce = 0;
+}
+
+
 int kdu_stripe_decompressor_new(kdu_stripe_decompressor** out) {
   try {
     *out = new kdu_supp::kdu_stripe_decompressor();
@@ -45,8 +52,9 @@ void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec) {
 }
 
 void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
-                                   kdu_codestream* cs) {
-  dec->start(*cs);
+                                   kdu_codestream* cs,
+                                   const kdu_stripe_decompressor_options *opts) {
+  dec->start(*cs, opts->force_precise, opts->want_fastest);
 }
 
 int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
@@ -63,6 +71,13 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
  *  kdu_stripe_compressor
  */
 
+void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options *opts) {
+  opts->force_precise = 0;
+  opts->want_fastest = 0;
+  opts->rate = -1;
+  opts->slope = -1;
+}
+
 int kdu_stripe_compressor_new(kdu_stripe_compressor** enc) {
   try {
     *enc = new kdu_supp::kdu_stripe_compressor();
@@ -77,10 +92,45 @@ void kdu_stripe_compressor_delete(kdu_stripe_compressor* enc) {
   delete enc;
 }
 
+static kdu_core::kdu_long get_bpp_dims(kdu_codestream &codestream)
+{
+  int comps = codestream.get_num_components();
+  int max_width = 0;
+  int max_height = 0;
+
+  for (int n = 0; n < comps; n++) { 
+    kdu_core::kdu_dims dims;
+    
+    codestream.get_dims(n, dims);
+
+    max_width = std::max(dims.size.x, max_width);
+    max_height = std::max(dims.size.y, max_height);
+  }
+
+  return ((kdu_core::kdu_long) max_height) * ((kdu_core::kdu_long) max_width);
+}
+
 void kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
-                                 kdu_codestream* cs) {
+                                 kdu_codestream* cs,
+                                 const kdu_stripe_compressor_options *opts
+                                 ) {
+  kdu_core::kdu_uint16 slope = (kdu_core::kdu_uint16) opts->slope;
+  kdu_core::kdu_long size = get_bpp_dims(*cs) * 0.125 * opts->rate;
+
   cs->access_siz()->finalize_all();
-  enc->start(*cs);
+
+  enc->start(*cs, /* codestream */
+              1, /* num_layer_specs */
+              opts->rate < 0 ? NULL : &size, /* layer_sizes */
+              opts->slope < 0 ? NULL : &slope, /* layer_slopes */
+              0, /* min_slope_threshold */
+              false, /* no_auto_complexity_control*/
+              opts->force_precise, /* force_precise */
+              true, /* record_layer_info_in_comment */
+              0, /* size_tolerance */
+              0, /* num_components */
+              opts->want_fastest
+              );
 }
 
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,

@@ -110,10 +110,19 @@ void kdu_compressed_target_bytes(mem_compressed_target* target, unsigned char** 
  * kdu_stripe_decompressor
  */
 
+typedef struct kdu_stripe_decompressor_options {
+  int force_precise;
+  int want_fastest;
+  int reduce;
+} kdu_stripe_decompressor_options;
+
+void kdu_stripe_decompressor_options_init(kdu_stripe_decompressor_options *opts);
+
 int kdu_stripe_decompressor_new(kdu_stripe_decompressor** out);
 void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec);
 void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
-                                   kdu_codestream* cs);
+                                   kdu_codestream* cs,
+                                   const kdu_stripe_decompressor_options *opts);
 int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
                                         unsigned char* pixels,
                                         const int* stripe_heights);
@@ -123,10 +132,20 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
  * kdu_stripe_compressor
  */
 
+typedef struct kdu_stripe_compressor_options {
+  int force_precise;
+  int want_fastest;
+  float rate;
+  int slope;
+} kdu_stripe_compressor_options;
+
+void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options *opts);
+
 int kdu_stripe_compressor_new(kdu_stripe_compressor** enc);
 void kdu_stripe_compressor_delete(kdu_stripe_compressor* enc);
 void kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
-                                 kdu_codestream* cs);
+                                 kdu_codestream* cs,
+                                 const kdu_stripe_compressor_options *opts);
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
                                       unsigned char* pixels,
                                       const int* stripe_heights);
