@@ -83,6 +83,7 @@ typedef struct siz_params kdu_siz_params;
  */
 
 int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestream** out);
+void kdu_codestream_discard_levels(kdu_codestream* cs, int discard_levels);
 void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int* height, int* width);
 int kdu_codestream_get_num_components(kdu_codestream* cs);
 

@@ -195,6 +195,10 @@ int kdu_codestream_parse_params(kdu_codestream* cs, const char* params) {
   return 0;
 }
 
+void kdu_codestream_discard_levels(kdu_codestream* cs, int discard_levels) {
+  cs->apply_input_restrictions(0, 0, discard_levels, 0, NULL);
+}
+
 /**
  *  kdu_compressed_source_buffered
  */
