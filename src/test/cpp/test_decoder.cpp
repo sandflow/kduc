@@ -50,7 +50,12 @@ int main(int argc, char** argv) {
 
   kdu_codestream_create_from_source(source, &cs);
 
+  kdu_codestream_discard_levels(cs, 1);
+
   kdu_codestream_get_size(cs, 0, &height, &width);
+
+  if (height != 180 || width != 320)
+    return 1;
 
   num_comps = kdu_codestream_get_num_components(cs);
 
@@ -60,7 +65,11 @@ int main(int argc, char** argv) {
 
   int stripe_heights[4] = {height, height, height, height};
 
-  kdu_stripe_decompressor_start(d, cs);
+  kdu_stripe_decompressor_options opts;
+
+  kdu_stripe_decompressor_options_init(&opts);
+
+  kdu_stripe_decompressor_start(d, cs, &opts);
 
   kdu_stripe_decompressor_pull_stripe(d, pixels.data(), stripe_heights);
 

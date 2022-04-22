@@ -37,7 +37,11 @@ int main(void) {
 
   int stripe_heights[4] = {height, height, height, height};
 
-  kdu_stripe_decompressor_start(d, cs);
+  kdu_stripe_decompressor_options opts;
+
+  kdu_stripe_decompressor_options_init(&opts);
+
+  kdu_stripe_decompressor_start(d, cs, &opts);
 
   int pull_strip_should_stop = 0;
   while(!pull_strip_should_stop) {
