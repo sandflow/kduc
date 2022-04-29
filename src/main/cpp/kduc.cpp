@@ -185,6 +185,7 @@ int kdu_codestream_get_num_components(kdu_codestream* cs) {
 }
 
 void kdu_codestream_delete(kdu_codestream* cs) {
+  cs->destroy();
   delete cs;
 }
 
