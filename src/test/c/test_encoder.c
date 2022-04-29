@@ -89,6 +89,8 @@ int main(void) {
 
   fclose(j2c_fd);
 
+  free(pixels);
+
   kdu_stripe_compressor_delete(enc);
 
   kdu_codestream_delete(cs);
