@@ -28,6 +28,65 @@
 #include <vector>
 
 /**
+ * Message handlers
+ */
+
+class error_message_handler : public kdu_core::kdu_message {
+ public:
+  error_message_handler() : handler(NULL) {}
+
+  void put_text(const char* msg) {
+    if (this->handler)
+      this->handler(msg);
+  }
+
+ /*virtual void flush(bool end_of_message=false) {
+   if (end_of_message) {
+     throw kdu_core::kdu_exception();
+   }
+ }*/
+
+  void set_handler(kdu_message_handler_func handler) {
+    this->handler = handler;
+  }
+
+ private:
+  kdu_message_handler_func handler;
+};
+
+class warning_message_handler : public kdu_core::kdu_message {
+ public:
+  warning_message_handler() : handler(NULL) {}
+
+  void put_text(const char* msg) {
+    if (this->handler)
+      this->handler(msg);
+  }
+  void set_handler(kdu_message_handler_func handler) {
+    this->handler = handler;
+  }
+
+ private:
+  kdu_message_handler_func handler;
+};
+
+void kdu_register_error_handler(kdu_message_handler_func handler) {
+  static error_message_handler error_handler;
+
+  error_handler.set_handler(handler);
+
+  kdu_core::kdu_customize_errors(&error_handler);
+}
+
+void kdu_register_warning_handler(kdu_message_handler_func handler) {
+  static warning_message_handler warning_handler;
+
+  warning_handler.set_handler(handler);
+
+  kdu_core::kdu_customize_warnings(&warning_handler);
+}
+
+/**
  *  kdu_stripe_decompressor
  */
 

@@ -2,21 +2,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static int is_error = 0;
+
+void print_message(const char* msg) {
+  printf("%s", msg);
+  is_error = 1;
+}
+
 int main(void) {
   int height = 480;
   int width = 640;
   int num_comps = 3;
-  unsigned char *pixels;
-  mem_compressed_target *target;
   int ret;
 
-  kdu_codestream *cs;
-  mem_compressed_target *source;
-  kdu_stripe_compressor *enc;
-  kdu_siz_params *siz;
+  unsigned char *pixels;
+  mem_compressed_target *target = NULL;
+  kdu_codestream *cs = NULL;
+  mem_compressed_target *source = NULL;
+  kdu_stripe_compressor *enc = NULL;
+  kdu_siz_params *siz = NULL;
 
   unsigned char *buf;
   int buf_sz;
+
+  /* register message handlers */
+
+  kdu_register_error_handler(&print_message);
+  kdu_register_warning_handler(&print_message);
 
   /* create image */
 
@@ -50,9 +62,10 @@ int main(void) {
   if (ret)
     return ret;
 
-  ret = kdu_codestream_parse_params(cs, "Cmodes=HT");
-  if (ret)
-    return ret;
+  ret = kdu_codestream_parse_params(cs, "Ctype=N");
+  ret = kdu_codestream_parse_params(cs, "Qfactor=85");
+  if (ret || is_error)
+    return ret || is_error;
 
   /* compressor */
 
