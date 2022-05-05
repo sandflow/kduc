@@ -204,6 +204,7 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
               0, /* num_components */
               opts->want_fastest
               );
+  return 0;
 }
 
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,

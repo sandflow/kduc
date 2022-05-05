@@ -18,7 +18,6 @@ int main(void) {
   unsigned char *pixels;
   mem_compressed_target *target = NULL;
   kdu_codestream *cs = NULL;
-  mem_compressed_target *source = NULL;
   kdu_stripe_compressor *enc = NULL;
   kdu_siz_params *siz = NULL;
 
