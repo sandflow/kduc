@@ -28,6 +28,7 @@ int main(void) {
 
   kdu_register_error_handler(&print_message);
   kdu_register_warning_handler(&print_message);
+  kdu_register_info_handler(&print_message);
 
   /* create image */
 
@@ -97,6 +98,8 @@ int main(void) {
   ret = kdu_stripe_compressor_finish(enc);
   if (ret)
     return ret;
+
+  kdu_codestream_textualize_params(cs, &print_message);
 
   kdu_compressed_target_bytes(target, &buf, &buf_sz);
 

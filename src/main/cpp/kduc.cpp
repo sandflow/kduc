@@ -41,9 +41,11 @@ class error_message_handler : public kdu_core::kdu_message {
   }
 
  virtual void flush(bool end_of_message=false) {
-   if (end_of_message) {
-     throw kdu_core::kdu_exception();
-   }
+  if (end_of_message) {
+    if (this->handler)
+      this->handler("\n");\
+    throw kdu_core::kdu_exception();
+  }
  }
 
   void set_handler(kdu_message_handler_func handler) {
@@ -61,6 +63,11 @@ class warning_message_handler : public kdu_core::kdu_message {
   void put_text(const char* msg) {
     if (this->handler)
       this->handler(msg);
+  }
+
+  virtual void flush(bool end_of_message=false) {
+    if (end_of_message && this->handler)
+      this->handler("\n");
   }
 
   void set_handler(kdu_message_handler_func handler) {
@@ -85,6 +92,12 @@ void kdu_register_warning_handler(kdu_message_handler_func handler) {
   warning_handler.set_handler(handler);
 
   kdu_core::kdu_customize_warnings(&warning_handler);
+}
+
+warning_message_handler info_handler;
+
+void kdu_register_info_handler(kdu_message_handler_func handler) {
+  info_handler.set_handler(handler);
 }
 
 /**
@@ -152,7 +165,7 @@ void kdu_stripe_compressor_delete(kdu_stripe_compressor* enc) {
   delete enc;
 }
 
-static kdu_core::kdu_long get_bpp_dims(kdu_codestream &codestream)
+static kdu_core::kdu_long get_total_pels(kdu_codestream &codestream)
 {
   int comps = codestream.get_num_components();
   int max_width = 0;
@@ -187,7 +200,7 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
       // substitute the dash "-" rate value to -1.0
       size[i] = KDU_LONG_MAX;
     } else {
-      size[i] = get_bpp_dims(*cs) * 0.125 * opts->rate[i];
+      size[i] = floor(get_total_pels(*cs) * 0.125 * opts->rate[i]);
     }
   }
 
@@ -198,6 +211,8 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
 
   try {
     cs->access_siz()->finalize_all();
+
+    cs->set_textualization(&info_handler);
 
     enc->start(*cs, /* codestream */
                 layer_count, /* num_layer_specs */
@@ -233,11 +248,11 @@ int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc) {
  *  kdu_codestream
  */
 
-int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestream** out) {
+int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestream** cs) {
   try {
-    *out = new kdu_supp::kdu_codestream();
+    *cs = new kdu_supp::kdu_codestream();
 
-    (*out)->create(source);
+    (*cs)->create(source);
   } catch (...) {
     return 1;
   }
@@ -247,11 +262,12 @@ int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestr
 
 int kdu_codestream_create_from_target(mem_compressed_target* target, kdu_siz_params* sz, kdu_codestream** cs) {
   try {
-    *cs = new kdu_supp::kdu_codestream();
-
     static_cast<kdu_core::kdu_params*>(sz)->finalize();
 
+    *cs = new kdu_supp::kdu_codestream();
+
     (*cs)->create(sz, target);
+
   } catch (...) {
     return 1;
   }
@@ -283,6 +299,13 @@ int kdu_codestream_parse_params(kdu_codestream* cs, const char* params) {
 
 void kdu_codestream_discard_levels(kdu_codestream* cs, int discard_levels) {
   cs->apply_input_restrictions(0, 0, discard_levels, 0, NULL);
+}
+
+void kdu_codestream_textualize_params(kdu_codestream* cs, kdu_message_handler_func handler) {
+  warning_message_handler msg_handler;
+
+  msg_handler.set_handler(handler);
+  cs->access_siz()->textualize_attributes(msg_handler, false);
 }
 
 /**

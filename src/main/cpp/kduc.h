@@ -88,6 +88,8 @@ void kdu_register_error_handler(kdu_message_handler_func handler);
 
 void kdu_register_warning_handler(kdu_message_handler_func handler);
 
+void kdu_register_info_handler(kdu_message_handler_func handler);
+
 /**
  * kdu_codestream
  */
@@ -103,6 +105,8 @@ int kdu_codestream_get_num_components(kdu_codestream* cs);
 int kdu_codestream_create_from_target(mem_compressed_target* target, kdu_siz_params* sz, kdu_codestream** cs);
 
 int kdu_codestream_parse_params(kdu_codestream* cs, const char* params);
+
+void kdu_codestream_textualize_params(kdu_codestream* cs, kdu_message_handler_func handler);
 
 void kdu_codestream_delete(kdu_codestream* cs);
 
