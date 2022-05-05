@@ -182,7 +182,12 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
   }
 
   for(int i = 0; i < opts->rate_count; i++) {
-    size[i] = get_bpp_dims(*cs) * 0.125 * opts->rate[i];
+    if (opts->rate[i] == -1.0) {
+      // substitute the dash "-" rate value to -1.0
+      size[i] = KDU_LONG_MAX;
+    } else {
+      size[i] = get_bpp_dims(*cs) * 0.125 * opts->rate[i];
+    }
   }
 
   if (opts->rate_count > 0 && opts->slope_count > 0 && opts->slope_count != opts->rate_count)
