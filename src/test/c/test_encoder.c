@@ -63,6 +63,13 @@ int main(void) {
     return ret;
 
   ret = kdu_codestream_parse_params(cs, "Ctype=N");
+  if (ret || is_error)
+    return ret || is_error;
+
+  ret = kdu_codestream_parse_params(cs, "Qweights=1.732051,1.805108,1.573402");
+  if (ret || is_error)
+    return ret || is_error;
+
   ret = kdu_codestream_parse_params(cs, "Qfactor=85");
   if (ret || is_error)
     return ret || is_error;
@@ -79,7 +86,9 @@ int main(void) {
 
   int stripe_heights[3] = {height, height, height};
 
-  kdu_stripe_compressor_start(enc, cs, &opts);
+  ret = kdu_stripe_compressor_start(enc, cs, &opts);
+  if (ret)
+    return ret;
 
   int stop = 0;
   while (!stop) {

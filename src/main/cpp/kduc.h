@@ -154,11 +154,15 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
  * kdu_stripe_compressor
  */
 
+#define KDU_MAX_LAYER_COUNT 32
+
 typedef struct kdu_stripe_compressor_options {
   int force_precise;
   int want_fastest;
-  float rate;
-  int slope;
+  int rate_count;
+  float rate[KDU_MAX_LAYER_COUNT];
+  int slope_count;
+  int slope[KDU_MAX_LAYER_COUNT];
 } kdu_stripe_compressor_options;
 
 void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options *opts);
@@ -167,7 +171,7 @@ int kdu_stripe_compressor_new(kdu_stripe_compressor** enc);
 
 void kdu_stripe_compressor_delete(kdu_stripe_compressor* enc);
 
-void kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
+int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                                  kdu_codestream* cs,
                                  const kdu_stripe_compressor_options *opts);
 

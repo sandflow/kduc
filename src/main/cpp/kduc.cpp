@@ -133,8 +133,8 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
 void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options *opts) {
   opts->force_precise = 0;
   opts->want_fastest = 0;
-  opts->rate = -1;
-  opts->slope = -1;
+  opts->rate_count = 0;
+  opts->slope_count = 0;
 }
 
 int kdu_stripe_compressor_new(kdu_stripe_compressor** enc) {
@@ -169,19 +169,33 @@ static kdu_core::kdu_long get_bpp_dims(kdu_codestream &codestream)
   return ((kdu_core::kdu_long) max_height) * ((kdu_core::kdu_long) max_width);
 }
 
-void kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
+int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                                  kdu_codestream* cs,
                                  const kdu_stripe_compressor_options *opts
                                  ) {
-  kdu_core::kdu_uint16 slope = (kdu_core::kdu_uint16) opts->slope;
-  kdu_core::kdu_long size = get_bpp_dims(*cs) * 0.125 * opts->rate;
+  kdu_core::kdu_uint16 slope[KDU_MAX_LAYER_COUNT];
+  kdu_core::kdu_long size[KDU_MAX_LAYER_COUNT];
+  int layer_count;
+
+  for(int i = 0; i < opts->slope_count; i++) {
+    slope[i] = (kdu_core::kdu_uint16) opts->slope[i];
+  }
+
+  for(int i = 0; i < opts->rate_count; i++) {
+    size[i] = get_bpp_dims(*cs) * 0.125 * opts->rate[i];
+  }
+
+  if (opts->rate_count > 0 && opts->slope_count > 0 && opts->slope_count != opts->rate_count)
+    return 1;
+
+  layer_count = opts->rate_count ? opts->rate_count : opts->slope_count;
 
   cs->access_siz()->finalize_all();
 
   enc->start(*cs, /* codestream */
-              1, /* num_layer_specs */
-              opts->rate < 0 ? NULL : &size, /* layer_sizes */
-              opts->slope < 0 ? NULL : &slope, /* layer_slopes */
+              layer_count, /* num_layer_specs */
+              opts->rate_count ? size : NULL, /* layer_sizes */
+              opts->slope_count ? slope : NULL, /* layer_slopes */
               0, /* min_slope_threshold */
               false, /* no_auto_complexity_control*/
               opts->force_precise, /* force_precise */
