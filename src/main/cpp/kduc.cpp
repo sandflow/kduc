@@ -40,11 +40,11 @@ class error_message_handler : public kdu_core::kdu_message {
       this->handler(msg);
   }
 
- /*virtual void flush(bool end_of_message=false) {
+ virtual void flush(bool end_of_message=false) {
    if (end_of_message) {
      throw kdu_core::kdu_exception();
    }
- }*/
+ }
 
   void set_handler(kdu_message_handler_func handler) {
     this->handler = handler;
@@ -62,6 +62,7 @@ class warning_message_handler : public kdu_core::kdu_message {
     if (this->handler)
       this->handler(msg);
   }
+
   void set_handler(kdu_message_handler_func handler) {
     this->handler = handler;
   }
@@ -195,20 +196,25 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
 
   layer_count = opts->rate_count ? opts->rate_count : opts->slope_count;
 
-  cs->access_siz()->finalize_all();
+  try {
+    cs->access_siz()->finalize_all();
 
-  enc->start(*cs, /* codestream */
-              layer_count, /* num_layer_specs */
-              opts->rate_count ? size : NULL, /* layer_sizes */
-              opts->slope_count ? slope : NULL, /* layer_slopes */
-              0, /* min_slope_threshold */
-              false, /* no_auto_complexity_control*/
-              opts->force_precise, /* force_precise */
-              true, /* record_layer_info_in_comment */
-              0, /* size_tolerance */
-              0, /* num_components */
-              opts->want_fastest
-              );
+    enc->start(*cs, /* codestream */
+                layer_count, /* num_layer_specs */
+                opts->rate_count ? size : NULL, /* layer_sizes */
+                opts->slope_count ? slope : NULL, /* layer_slopes */
+                0, /* min_slope_threshold */
+                false, /* no_auto_complexity_control*/
+                opts->force_precise, /* force_precise */
+                true, /* record_layer_info_in_comment */
+                0, /* size_tolerance */
+                0, /* num_components */
+                opts->want_fastest
+                );
+  } catch (kdu_core::kdu_exception &e) {
+    return 1;
+  }
+
   return 0;
 }
 

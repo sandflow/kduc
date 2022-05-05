@@ -6,7 +6,7 @@ static int is_error = 0;
 
 void print_message(const char* msg) {
   printf("%s", msg);
-  is_error = 1;
+  fflush(stdout);
 }
 
 int main(void) {
@@ -62,16 +62,16 @@ int main(void) {
     return ret;
 
   ret = kdu_codestream_parse_params(cs, "Ctype=N");
-  if (ret || is_error)
-    return ret || is_error;
+  if (ret)
+    return ret;
 
   ret = kdu_codestream_parse_params(cs, "Qweights=1.732051,1.805108,1.573402");
-  if (ret || is_error)
-    return ret || is_error;
+  if (ret)
+    return ret;
 
   ret = kdu_codestream_parse_params(cs, "Qfactor=85");
-  if (ret || is_error)
-    return ret || is_error;
+  if (ret)
+    return ret;
 
   /* compressor */
 
