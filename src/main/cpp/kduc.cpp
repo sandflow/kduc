@@ -40,13 +40,13 @@ class error_message_handler : public kdu_core::kdu_message {
       this->handler(msg);
   }
 
- virtual void flush(bool end_of_message=false) {
-  if (end_of_message) {
-    if (this->handler)
-      this->handler("\n");\
-    throw kdu_core::kdu_exception();
+  virtual void flush(bool end_of_message = false) {
+    if (end_of_message) {
+      if (this->handler)
+        this->handler("\n");
+      throw kdu_core::kdu_exception();
+    }
   }
- }
 
   void set_handler(kdu_message_handler_func handler) {
     this->handler = handler;
@@ -65,7 +65,7 @@ class warning_message_handler : public kdu_core::kdu_message {
       this->handler(msg);
   }
 
-  virtual void flush(bool end_of_message=false) {
+  virtual void flush(bool end_of_message = false) {
     if (end_of_message && this->handler)
       this->handler("\n");
   }
@@ -104,12 +104,12 @@ void kdu_register_info_handler(kdu_message_handler_func handler) {
  *  kdu_stripe_decompressor
  */
 
-void kdu_stripe_decompressor_options_init(kdu_stripe_decompressor_options *opts) {
+void kdu_stripe_decompressor_options_init(
+    kdu_stripe_decompressor_options* opts) {
   opts->force_precise = 0;
   opts->want_fastest = 0;
   opts->reduce = 0;
 }
-
 
 int kdu_stripe_decompressor_new(kdu_stripe_decompressor** out) {
   try {
@@ -124,9 +124,10 @@ void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec) {
   delete dec;
 }
 
-void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
-                                   kdu_codestream* cs,
-                                   const kdu_stripe_decompressor_options *opts) {
+void kdu_stripe_decompressor_start(
+    kdu_stripe_decompressor* dec,
+    kdu_codestream* cs,
+    const kdu_stripe_decompressor_options* opts) {
   dec->start(*cs, opts->force_precise, opts->want_fastest);
 }
 
@@ -144,7 +145,7 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
  *  kdu_stripe_compressor
  */
 
-void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options *opts) {
+void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options* opts) {
   opts->force_precise = 0;
   opts->want_fastest = 0;
   opts->rate_count = 0;
@@ -166,37 +167,35 @@ void kdu_stripe_compressor_delete(kdu_stripe_compressor* enc) {
   delete enc;
 }
 
-static kdu_core::kdu_long get_total_pels(kdu_codestream &codestream)
-{
+static kdu_core::kdu_long get_total_pels(kdu_codestream& codestream) {
   int comps = codestream.get_num_components();
   int max_width = 0;
   int max_height = 0;
 
-  for (int n = 0; n < comps; n++) { 
+  for (int n = 0; n < comps; n++) {
     kdu_core::kdu_dims dims;
-    
+
     codestream.get_dims(n, dims);
 
     max_width = std::max(dims.size.x, max_width);
     max_height = std::max(dims.size.y, max_height);
   }
 
-  return ((kdu_core::kdu_long) max_height) * ((kdu_core::kdu_long) max_width);
+  return ((kdu_core::kdu_long)max_height) * ((kdu_core::kdu_long)max_width);
 }
 
 int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
-                                 kdu_codestream* cs,
-                                 const kdu_stripe_compressor_options *opts
-                                 ) {
+                                kdu_codestream* cs,
+                                const kdu_stripe_compressor_options* opts) {
   kdu_core::kdu_uint16 slope[KDU_MAX_LAYER_COUNT];
   kdu_core::kdu_long size[KDU_MAX_LAYER_COUNT];
   int layer_count;
 
-  for(int i = 0; i < opts->slope_count; i++) {
-    slope[i] = (kdu_core::kdu_uint16) opts->slope[i];
+  for (int i = 0; i < opts->slope_count; i++) {
+    slope[i] = (kdu_core::kdu_uint16)opts->slope[i];
   }
 
-  for(int i = 0; i < opts->rate_count; i++) {
+  for (int i = 0; i < opts->rate_count; i++) {
     if (opts->rate[i] == -1.0) {
       // substitute the dash "-" rate value to -1.0
       size[i] = KDU_LONG_MAX;
@@ -205,7 +204,8 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
     }
   }
 
-  if (opts->rate_count > 0 && opts->slope_count > 0 && opts->slope_count != opts->rate_count)
+  if (opts->rate_count > 0 && opts->slope_count > 0 &&
+      opts->slope_count != opts->rate_count)
     return 1;
 
   layer_count = opts->rate_count ? opts->rate_count : opts->slope_count;
@@ -215,19 +215,18 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
 
     cs->set_textualization(&info_handler);
 
-    enc->start(*cs, /* codestream */
-                layer_count, /* num_layer_specs */
-                opts->rate_count ? size : NULL, /* layer_sizes */
-                opts->slope_count ? slope : NULL, /* layer_slopes */
-                0, /* min_slope_threshold */
-                false, /* no_auto_complexity_control*/
-                opts->force_precise, /* force_precise */
-                true, /* record_layer_info_in_comment */
-                opts->tolerance, /* size_tolerance */
-                0, /* num_components */
-                opts->want_fastest
-                );
-  } catch (kdu_core::kdu_exception &e) {
+    enc->start(*cs,                              /* codestream */
+               layer_count,                      /* num_layer_specs */
+               opts->rate_count ? size : NULL,   /* layer_sizes */
+               opts->slope_count ? slope : NULL, /* layer_slopes */
+               0,                                /* min_slope_threshold */
+               false,                            /* no_auto_complexity_control*/
+               opts->force_precise,              /* force_precise */
+               true,            /* record_layer_info_in_comment */
+               opts->tolerance, /* size_tolerance */
+               0,               /* num_components */
+               opts->want_fastest);
+  } catch (kdu_core::kdu_exception& e) {
     return 1;
   }
 
@@ -244,12 +243,12 @@ int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc) {
   return !enc->finish();
 }
 
-
 /**
  *  kdu_codestream
  */
 
-int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestream** cs) {
+int kdu_codestream_create_from_source(kdu_compressed_source* source,
+                                      kdu_codestream** cs) {
   try {
     *cs = new kdu_supp::kdu_codestream();
 
@@ -260,8 +259,9 @@ int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestr
   return 0;
 }
 
-
-int kdu_codestream_create_from_target(mem_compressed_target* target, kdu_siz_params* sz, kdu_codestream** cs) {
+int kdu_codestream_create_from_target(mem_compressed_target* target,
+                                      kdu_siz_params* sz,
+                                      kdu_codestream** cs) {
   try {
     static_cast<kdu_core::kdu_params*>(sz)->finalize();
 
@@ -275,7 +275,10 @@ int kdu_codestream_create_from_target(mem_compressed_target* target, kdu_siz_par
   return 0;
 }
 
-void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int* height, int* width) {
+void kdu_codestream_get_size(kdu_codestream* cs,
+                             int comp_idx,
+                             int* height,
+                             int* width) {
   kdu_core::kdu_dims dims;
   cs->get_dims(comp_idx, dims);
   *height = dims.size.y;
@@ -302,7 +305,8 @@ void kdu_codestream_discard_levels(kdu_codestream* cs, int discard_levels) {
   cs->apply_input_restrictions(0, 0, discard_levels, 0, NULL);
 }
 
-void kdu_codestream_textualize_params(kdu_codestream* cs, kdu_message_handler_func handler) {
+void kdu_codestream_textualize_params(kdu_codestream* cs,
+                                      kdu_message_handler_func handler) {
   warning_message_handler msg_handler;
 
   msg_handler.set_handler(handler);
@@ -313,9 +317,12 @@ void kdu_codestream_textualize_params(kdu_codestream* cs, kdu_message_handler_fu
  *  kdu_compressed_source_buffered
  */
 
-int kdu_compressed_source_buffered_new(const unsigned char* cs, const unsigned long int len, kdu_compressed_source** out) {
+int kdu_compressed_source_buffered_new(const unsigned char* cs,
+                                       const unsigned long int len,
+                                       kdu_compressed_source** out) {
   try {
-    *out = new kdu_core::kdu_compressed_source_buffered((kdu_core::kdu_byte*) cs, len);
+    *out = new kdu_core::kdu_compressed_source_buffered((kdu_core::kdu_byte*)cs,
+                                                        len);
   } catch (...) {
     return 1;
   }
@@ -343,7 +350,6 @@ void kdu_siz_params_delete(kdu_siz_params* sz) {
   delete sz;
 }
 
-
 int kdu_siz_params_parse_string(kdu_siz_params* sz, const char* args) {
   if ((!sz->parse_string(args)))
     return 1;
@@ -351,7 +357,10 @@ int kdu_siz_params_parse_string(kdu_siz_params* sz, const char* args) {
   return 0;
 }
 
-void kdu_siz_params_set_size(kdu_siz_params* sz, int comp_idx, int height, int width) {
+void kdu_siz_params_set_size(kdu_siz_params* sz,
+                             int comp_idx,
+                             int height,
+                             int width) {
   sz->set(Sdims, comp_idx, 0, height);
   sz->set(Sdims, comp_idx, 1, width);
 }
@@ -360,7 +369,9 @@ void kdu_siz_params_set_precision(kdu_siz_params* sz, int comp_idx, int prec) {
   sz->set(Sprecision, comp_idx, 0, prec);
 }
 
-void kdu_siz_params_set_signed(kdu_siz_params* sz, int comp_idx, int is_signed) {
+void kdu_siz_params_set_signed(kdu_siz_params* sz,
+                               int comp_idx,
+                               int is_signed) {
   sz->set(Ssigned, comp_idx, 0, is_signed);
 }
 
@@ -375,7 +386,8 @@ void kdu_siz_params_set_num_components(kdu_siz_params* sz, int num_comps) {
 int kdu_compressed_target_mem_new(mem_compressed_target** target) {
   *target = new mem_compressed_target();
 
-  if (!*target) return 1;
+  if (!*target)
+    return 1;
 
   return 0;
 }
@@ -384,7 +396,9 @@ void kdu_compressed_target_mem_delete(mem_compressed_target* target) {
   delete target;
 }
 
-void kdu_compressed_target_bytes(mem_compressed_target* target, unsigned char** data, int* sz) {
+void kdu_compressed_target_bytes(mem_compressed_target* target,
+                                 unsigned char** data,
+                                 int* sz) {
   *data = target->get_buffer().data();
   *sz = target->get_buffer().size();
 }
