@@ -149,6 +149,7 @@ void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options *opts) {
   opts->want_fastest = 0;
   opts->rate_count = 0;
   opts->slope_count = 0;
+  opts->tolerance = 0;
 }
 
 int kdu_stripe_compressor_new(kdu_stripe_compressor** enc) {
@@ -222,7 +223,7 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                 false, /* no_auto_complexity_control*/
                 opts->force_precise, /* force_precise */
                 true, /* record_layer_info_in_comment */
-                0, /* size_tolerance */
+                opts->tolerance, /* size_tolerance */
                 0, /* num_components */
                 opts->want_fastest
                 );

@@ -161,11 +161,12 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
 #define KDU_MAX_LAYER_COUNT 32
 
 typedef struct kdu_stripe_compressor_options {
-  int force_precise;
-  int want_fastest;
-  int rate_count;
+  int force_precise;                  /* 0 or 1 */
+  int want_fastest;                   /* 0 or 1 */
+  float tolerance;                    /* [0..0.5] */
+  int rate_count;                     /* [0..32] */
   float rate[KDU_MAX_LAYER_COUNT];
-  int slope_count;
+  int slope_count;                    /* [0..32] */
   int slope[KDU_MAX_LAYER_COUNT];
 } kdu_stripe_compressor_options;
 
