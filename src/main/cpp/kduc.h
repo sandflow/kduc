@@ -31,9 +31,9 @@
 
 #ifdef __cplusplus
 
+#include <vector>
 #include "kdu_stripe_compressor.h"
 #include "kdu_stripe_decompressor.h"
-#include <vector>
 
 typedef kdu_supp::kdu_stripe_decompressor kdu_stripe_decompressor;
 typedef kdu_supp::kdu_stripe_compressor kdu_stripe_compressor;
@@ -55,7 +55,9 @@ class mem_compressed_target : public kdu_core::kdu_compressed_target {
     return true;
   }
 
-  void set_target_size( kdu_core::kdu_long num_bytes) { this->buf.reserve(num_bytes); }
+  void set_target_size(kdu_core::kdu_long num_bytes) {
+    this->buf.reserve(num_bytes);
+  }
 
   bool prefer_large_writes() const { return false; }
 
@@ -79,16 +81,41 @@ typedef struct siz_params kdu_siz_params;
 #endif
 
 /**
+ * message handlers
+ */
+
+typedef void (*kdu_message_handler_func)(const char*);
+
+void kdu_register_error_handler(kdu_message_handler_func handler);
+
+void kdu_register_warning_handler(kdu_message_handler_func handler);
+
+void kdu_register_info_handler(kdu_message_handler_func handler);
+
+/**
  * kdu_codestream
  */
 
-int kdu_codestream_create_from_source(kdu_compressed_source* source, kdu_codestream** out);
+int kdu_codestream_create_from_source(kdu_compressed_source* source,
+                                      kdu_codestream** out);
+
 void kdu_codestream_discard_levels(kdu_codestream* cs, int discard_levels);
-void kdu_codestream_get_size(kdu_codestream* cs, int comp_idx, int* height, int* width);
+
+void kdu_codestream_get_size(kdu_codestream* cs,
+                             int comp_idx,
+                             int* height,
+                             int* width);
+
 int kdu_codestream_get_num_components(kdu_codestream* cs);
 
-int kdu_codestream_create_from_target(mem_compressed_target* target, kdu_siz_params* sz, kdu_codestream** cs);
+int kdu_codestream_create_from_target(mem_compressed_target* target,
+                                      kdu_siz_params* sz,
+                                      kdu_codestream** cs);
+
 int kdu_codestream_parse_params(kdu_codestream* cs, const char* params);
+
+void kdu_codestream_textualize_params(kdu_codestream* cs,
+                                      kdu_message_handler_func handler);
 
 void kdu_codestream_delete(kdu_codestream* cs);
 
@@ -96,7 +123,10 @@ void kdu_codestream_delete(kdu_codestream* cs);
  * kdu_compressed_source_buffered
  */
 
-int kdu_compressed_source_buffered_new(const unsigned char* cs, unsigned long int len, kdu_compressed_source** out);
+int kdu_compressed_source_buffered_new(const unsigned char* cs,
+                                       unsigned long int len,
+                                       kdu_compressed_source** out);
+
 void kdu_compressed_source_buffered_delete(kdu_compressed_source* cs);
 
 /**
@@ -104,8 +134,12 @@ void kdu_compressed_source_buffered_delete(kdu_compressed_source* cs);
  */
 
 int kdu_compressed_target_mem_new(mem_compressed_target** target);
+
 void kdu_compressed_target_mem_delete(mem_compressed_target* target);
-void kdu_compressed_target_bytes(mem_compressed_target* target, unsigned char** data, int* sz);
+
+void kdu_compressed_target_bytes(mem_compressed_target* target,
+                                 unsigned char** data,
+                                 int* sz);
 
 /**
  * kdu_stripe_decompressor
@@ -117,39 +151,53 @@ typedef struct kdu_stripe_decompressor_options {
   int reduce;
 } kdu_stripe_decompressor_options;
 
-void kdu_stripe_decompressor_options_init(kdu_stripe_decompressor_options *opts);
+void kdu_stripe_decompressor_options_init(
+    kdu_stripe_decompressor_options* opts);
 
 int kdu_stripe_decompressor_new(kdu_stripe_decompressor** out);
+
 void kdu_stripe_decompressor_delete(kdu_stripe_decompressor* dec);
+
 void kdu_stripe_decompressor_start(kdu_stripe_decompressor* dec,
                                    kdu_codestream* cs,
-                                   const kdu_stripe_decompressor_options *opts);
+                                   const kdu_stripe_decompressor_options* opts);
+
 int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
                                         unsigned char* pixels,
                                         const int* stripe_heights);
+
 int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
 
 /**
  * kdu_stripe_compressor
  */
 
+#define KDU_MAX_LAYER_COUNT 32
+
 typedef struct kdu_stripe_compressor_options {
-  int force_precise;
-  int want_fastest;
-  float rate;
-  int slope;
+  int force_precise; /* 0 or 1 */
+  int want_fastest;  /* 0 or 1 */
+  float tolerance;   /* [0..0.5] */
+  int rate_count;    /* [0..32] */
+  float rate[KDU_MAX_LAYER_COUNT];
+  int slope_count; /* [0..32] */
+  int slope[KDU_MAX_LAYER_COUNT];
 } kdu_stripe_compressor_options;
 
-void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options *opts);
+void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options* opts);
 
 int kdu_stripe_compressor_new(kdu_stripe_compressor** enc);
+
 void kdu_stripe_compressor_delete(kdu_stripe_compressor* enc);
-void kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
-                                 kdu_codestream* cs,
-                                 const kdu_stripe_compressor_options *opts);
+
+int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
+                                kdu_codestream* cs,
+                                const kdu_stripe_compressor_options* opts);
+
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
                                       unsigned char* pixels,
                                       const int* stripe_heights);
+
 int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc);
 
 /**
@@ -159,9 +207,16 @@ int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc);
 int kdu_siz_params_new(kdu_siz_params** sz);
 
 int kdu_siz_params_parse_string(kdu_siz_params* sz, const char* args);
-void kdu_siz_params_set_size(kdu_siz_params* sz, int comp_idx, int height, int width);
+
+void kdu_siz_params_set_size(kdu_siz_params* sz,
+                             int comp_idx,
+                             int height,
+                             int width);
+
 void kdu_siz_params_set_precision(kdu_siz_params* sz, int comp_idx, int prec);
+
 void kdu_siz_params_set_signed(kdu_siz_params* sz, int comp_idx, int is_signed);
+
 void kdu_siz_params_set_num_components(kdu_siz_params* sz, int num_comps);
 
 void kdu_siz_params_delete(kdu_siz_params* sz);

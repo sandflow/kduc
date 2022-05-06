@@ -2,21 +2,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static int is_error = 0;
+
+void print_message(const char* msg) {
+  printf("%s", msg);
+  fflush(stdout);
+}
+
 int main(void) {
   int height = 480;
   int width = 640;
   int num_comps = 3;
-  unsigned char *pixels;
-  mem_compressed_target *target;
   int ret;
 
-  kdu_codestream *cs;
-  mem_compressed_target *source;
-  kdu_stripe_compressor *enc;
-  kdu_siz_params *siz;
+  unsigned char *pixels;
+  mem_compressed_target *target = NULL;
+  kdu_codestream *cs = NULL;
+  kdu_stripe_compressor *enc = NULL;
+  kdu_siz_params *siz = NULL;
 
   unsigned char *buf;
   int buf_sz;
+
+  /* register message handlers */
+
+  kdu_register_error_handler(&print_message);
+  kdu_register_warning_handler(&print_message);
+  kdu_register_info_handler(&print_message);
 
   /* create image */
 
@@ -50,7 +62,15 @@ int main(void) {
   if (ret)
     return ret;
 
-  ret = kdu_codestream_parse_params(cs, "Cmodes=HT");
+  ret = kdu_codestream_parse_params(cs, "Ctype=N");
+  if (ret)
+    return ret;
+
+  ret = kdu_codestream_parse_params(cs, "Qweights=1.732051,1.805108,1.573402");
+  if (ret)
+    return ret;
+
+  ret = kdu_codestream_parse_params(cs, "Qfactor=85");
   if (ret)
     return ret;
 
@@ -66,7 +86,9 @@ int main(void) {
 
   int stripe_heights[3] = {height, height, height};
 
-  kdu_stripe_compressor_start(enc, cs, &opts);
+  ret = kdu_stripe_compressor_start(enc, cs, &opts);
+  if (ret)
+    return ret;
 
   int stop = 0;
   while (!stop) {
@@ -76,6 +98,8 @@ int main(void) {
   ret = kdu_stripe_compressor_finish(enc);
   if (ret)
     return ret;
+
+  kdu_codestream_textualize_params(cs, &print_message);
 
   kdu_compressed_target_bytes(target, &buf, &buf_sz);
 
