@@ -100,6 +100,12 @@ void kdu_register_info_handler(kdu_message_handler_func handler) {
   info_handler.set_handler(handler);
 }
 
+warning_message_handler debug_handler;
+
+void kdu_register_debug_handler(kdu_message_handler_func handler) {
+  debug_handler.set_handler(handler);
+}
+
 /**
  *  kdu_stripe_decompressor
  */

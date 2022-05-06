@@ -92,6 +92,8 @@ void kdu_register_warning_handler(kdu_message_handler_func handler);
 
 void kdu_register_info_handler(kdu_message_handler_func handler);
 
+void kdu_register_debug_handler(kdu_message_handler_func handler);
+
 /**
  * kdu_codestream
  */
