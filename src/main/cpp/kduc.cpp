@@ -228,10 +228,15 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                0,                                /* min_slope_threshold */
                false,                            /* no_auto_complexity_control*/
                opts->force_precise,              /* force_precise */
-               true,            /* record_layer_info_in_comment */
-               opts->tolerance, /* size_tolerance */
-               0,               /* num_components */
-               opts->want_fastest);
+               true,                     /* record_layer_info_in_comment */
+               opts->tolerance,          /* size_tolerance */
+               0,                        /* num_components */
+               opts->want_fastest, NULL, /*env*/
+               NULL,                     /* env_queue */
+               -1,                       /* env_dbuf_height */
+               -1,                       /* env_tile_concurrency */
+               opts->tolerance == 0      /* trim_to_rate */
+    );
   } catch (kdu_core::kdu_exception& e) {
     return 1;
   }
