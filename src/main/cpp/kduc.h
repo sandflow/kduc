@@ -198,7 +198,8 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
 
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
                                       unsigned char* pixels,
-                                      const int* stripe_heights);
+                                      const int* stripe_heights,
+                                      const int* precisions);
 
 int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc);
 

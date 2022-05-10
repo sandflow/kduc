@@ -235,7 +235,8 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                NULL,                     /* env_queue */
                -1,                       /* env_dbuf_height */
                -1,                       /* env_tile_concurrency */
-               opts->tolerance == 0      /* trim_to_rate */
+               opts->tolerance == 0,     /* trim_to_rate */
+               KDU_FLUSH_USES_THRESHOLDS_AND_SIZES
     );
   } catch (kdu_core::kdu_exception& e) {
     return 1;
@@ -246,8 +247,15 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
 
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
                                       unsigned char* pixels,
-                                      const int* stripe_heights) {
-  return !enc->push_stripe(pixels, stripe_heights);
+                                      const int* stripe_heights,
+                                      const int* precisions) {
+  return !enc->push_stripe(pixels,         /* buffer */
+                           stripe_heights, /* stripe_heights */
+                           NULL,           /* sample_offsets */
+                           NULL,           /* sample_gaps */
+                           NULL,           /* row_gaps */
+                           precisions      /* precisions */
+  );
 }
 
 int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc) {
