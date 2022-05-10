@@ -15,7 +15,7 @@ int main(void) {
   int num_comps = 3;
   int ret;
 
-  unsigned char *pixels;
+  uint16_t *pixels;
   mem_compressed_target *target = NULL;
   kdu_codestream *cs = NULL;
   kdu_stripe_compressor *enc = NULL;
@@ -32,12 +32,12 @@ int main(void) {
 
   /* create image */
 
-  pixels = malloc(height * width * num_comps);
+  pixels = malloc(height * width * num_comps * sizeof(*pixels));
   if (! pixels)
     return 1;
 
   for(int i = 0; i < height * width * num_comps; i++)
-    pixels[i] = (unsigned char) (i & 0xFF);
+    pixels[i] = (i & 0x3FFF);
 
   /* initialize siz */
 
@@ -46,7 +46,7 @@ int main(void) {
     return ret;
 
   kdu_siz_params_set_num_components(siz, num_comps);
-  kdu_siz_params_set_precision(siz, 0, 8);
+  kdu_siz_params_set_precision(siz, 0, 16);
   kdu_siz_params_set_size(siz, 0, height, width);
   kdu_siz_params_set_signed(siz, 0, 0);
 
@@ -85,6 +85,8 @@ int main(void) {
   kdu_stripe_compressor_options_init(&opts);
 
   int stripe_heights[3] = {height, height, height};
+  int precisions[3] = {16, 16, 16};
+  bool is_signed[3] = {false, false, false};
 
   ret = kdu_stripe_compressor_start(enc, cs, &opts);
   if (ret)
@@ -92,7 +94,7 @@ int main(void) {
 
   int stop = 0;
   while (!stop) {
-    stop = kdu_stripe_compressor_push_stripe(enc, pixels, stripe_heights);
+    stop = kdu_stripe_compressor_push_stripe_16(enc, pixels, stripe_heights, precisions, is_signed);
   }
 
   ret = kdu_stripe_compressor_finish(enc);
@@ -106,7 +108,7 @@ int main(void) {
   if (buf_sz == 0)
     return 1;
 
-  FILE *j2c_fd = fopen("test_encoder.j2c", "wb");
+  FILE *j2c_fd = fopen("test_encoder_16.j2c", "wb");
 
   if ((fwrite(buf, 1, buf_sz, j2c_fd) != buf_sz))
     return 1;
