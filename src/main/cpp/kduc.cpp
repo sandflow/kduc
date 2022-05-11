@@ -235,7 +235,7 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                NULL,                     /* env_queue */
                -1,                       /* env_dbuf_height */
                -1,                       /* env_tile_concurrency */
-               opts->tolerance,          /* trim_to_rate */
+               opts->tolerance == 0,          /* trim_to_rate */
                KDU_FLUSH_USES_THRESHOLDS_AND_SIZES
     );
   } catch (kdu_core::kdu_exception& e) {
