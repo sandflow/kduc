@@ -28,6 +28,7 @@
 #define KDUC_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 
@@ -148,8 +149,8 @@ void kdu_compressed_target_bytes(mem_compressed_target* target,
  */
 
 typedef struct kdu_stripe_decompressor_options {
-  int force_precise;
-  int want_fastest;
+  bool force_precise;
+  bool want_fastest;
   int reduce;
 } kdu_stripe_decompressor_options;
 
@@ -177,12 +178,12 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
 #define KDU_MAX_LAYER_COUNT 32
 
 typedef struct kdu_stripe_compressor_options {
-  int force_precise; /* 0 or 1 */
-  int want_fastest;  /* 0 or 1 */
+  bool force_precise; /* 0 or 1 */
+  bool want_fastest;  /* 0 or 1 */
   float tolerance;   /* [0..0.5] */
-  int rate_count;    /* [0..32] */
+  int rate_count;    /* [0..KDU_MAX_LAYER_COUNT] */
   float rate[KDU_MAX_LAYER_COUNT];
-  int slope_count; /* [0..32] */
+  int slope_count; /* [0..KDU_MAX_LAYER_COUNT] */
   int slope[KDU_MAX_LAYER_COUNT];
 } kdu_stripe_compressor_options;
 
@@ -199,6 +200,12 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
                                       unsigned char* pixels,
                                       const int* stripe_heights);
+
+int kdu_stripe_compressor_push_stripe_16(kdu_stripe_compressor* enc,
+                                          int16_t* pixels,
+                                          const int* stripe_heights,
+                                          const int* precisions,
+                                          const bool* is_signed);
 
 int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc);
 

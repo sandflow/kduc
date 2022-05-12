@@ -112,8 +112,8 @@ void kdu_register_debug_handler(kdu_message_handler_func handler) {
 
 void kdu_stripe_decompressor_options_init(
     kdu_stripe_decompressor_options* opts) {
-  opts->force_precise = 0;
-  opts->want_fastest = 0;
+  opts->force_precise = false;
+  opts->want_fastest = false;
   opts->reduce = 0;
 }
 
@@ -152,8 +152,8 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
  */
 
 void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options* opts) {
-  opts->force_precise = 0;
-  opts->want_fastest = 0;
+  opts->force_precise = false;
+  opts->want_fastest = false;
   opts->rate_count = 0;
   opts->slope_count = 0;
   opts->tolerance = 0;
@@ -235,7 +235,8 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                NULL,                     /* env_queue */
                -1,                       /* env_dbuf_height */
                -1,                       /* env_tile_concurrency */
-               opts->tolerance == 0      /* trim_to_rate */
+               opts->tolerance == 0,          /* trim_to_rate */
+               KDU_FLUSH_USES_THRESHOLDS_AND_SIZES
     );
   } catch (kdu_core::kdu_exception& e) {
     return 1;
@@ -247,7 +248,23 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
 int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
                                       unsigned char* pixels,
                                       const int* stripe_heights) {
-  return !enc->push_stripe(pixels, stripe_heights);
+  return !enc->push_stripe(pixels,         /* buffer */
+                           stripe_heights);
+}
+
+int kdu_stripe_compressor_push_stripe_16(kdu_stripe_compressor* enc,
+                                         int16_t* pixels,
+                                         const int* stripe_heights,
+                                         const int* precisions,
+                                         const bool* is_signed) {
+  return !enc->push_stripe(pixels,         /* buffer */
+                           stripe_heights, /* stripe_heights */
+                           NULL,           /* sample_offsets */
+                           NULL,           /* sample_gaps */
+                           NULL,           /* row_gaps */
+                           precisions,     /* precisions*/
+                           is_signed       /* is_signed*/
+  );
 }
 
 int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc) {
