@@ -85,6 +85,7 @@ int main(void) {
   kdu_stripe_compressor_options_init(&opts);
 
   int stripe_heights[3] = {height, height, height};
+  int precisions[3] = {8, 8, 8};
 
   ret = kdu_stripe_compressor_start(enc, cs, &opts);
   if (ret)
@@ -92,7 +93,8 @@ int main(void) {
 
   int stop = 0;
   while (!stop) {
-    stop = kdu_stripe_compressor_push_stripe(enc, pixels, stripe_heights);
+    stop = kdu_stripe_compressor_push_stripe(enc, pixels, stripe_heights, NULL,
+                                             NULL, NULL, precisions);
   }
 
   ret = kdu_stripe_compressor_finish(enc);

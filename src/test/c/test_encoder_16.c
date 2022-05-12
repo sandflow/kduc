@@ -12,6 +12,7 @@ void print_message(const char* msg) {
 int main(void) {
   int height = 480;
   int width = 640;
+  int pad_pix_count = 4;
   int num_comps = 3;
   int ret;
 
@@ -32,12 +33,18 @@ int main(void) {
 
   /* create image */
 
-  pixels = malloc(height * width * num_comps * sizeof(*pixels));
+  pixels = malloc(height * (width + pad_pix_count) * num_comps * sizeof(*pixels));
   if (! pixels)
     return 1;
 
-  for(int i = 0; i < height * width * num_comps; i++)
-    pixels[i] = (i & 0x3FFF);
+  for(int i = 0; i < height; i++) {
+    for(int j = 0; j < width; j++) {
+      int pix_offset = (i * (width + pad_pix_count) + j) * num_comps;
+      pixels[pix_offset] = j << 6;
+      pixels[pix_offset + 1] = j << 6;
+      pixels[pix_offset + 2] = j << 6;
+    }
+  }
 
   /* initialize siz */
 
@@ -86,6 +93,7 @@ int main(void) {
 
   int stripe_heights[3] = {height, height, height};
   int precisions[3] = {16, 16, 16};
+  int row_gaps[3] = {(width + pad_pix_count) * num_comps,(width + pad_pix_count) * num_comps, (width + pad_pix_count) * num_comps};
   bool is_signed[3] = {false, false, false};
 
   ret = kdu_stripe_compressor_start(enc, cs, &opts);
@@ -94,7 +102,8 @@ int main(void) {
 
   int stop = 0;
   while (!stop) {
-    stop = kdu_stripe_compressor_push_stripe_16(enc, pixels, stripe_heights, precisions, is_signed);
+    stop = kdu_stripe_compressor_push_stripe_16(
+        enc, pixels, stripe_heights, NULL, NULL, row_gaps, precisions, is_signed);
   }
 
   ret = kdu_stripe_compressor_finish(enc);
