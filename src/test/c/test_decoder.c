@@ -36,6 +36,7 @@ int main(void) {
   unsigned char pixels[width * height * num_comps];
 
   int stripe_heights[4] = {height, height, height, height};
+  int precisions[4] = {8, 8, 8, 8};
 
   kdu_stripe_decompressor_options opts;
 
@@ -45,7 +46,8 @@ int main(void) {
 
   int pull_strip_should_stop = 0;
   while(!pull_strip_should_stop) {
-    pull_strip_should_stop = kdu_stripe_decompressor_pull_stripe(d, &pixels[0], stripe_heights);
+    pull_strip_should_stop = kdu_stripe_decompressor_pull_stripe(
+        d, &pixels[0], stripe_heights, NULL, NULL, NULL, precisions, NULL);
   }
 
   ret = kdu_stripe_decompressor_finish(d);
