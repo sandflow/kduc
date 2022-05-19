@@ -6,6 +6,7 @@ int main(void) {
   int width;
   int num_comps;
   int ret;
+  int sampling_x, sampling_y;
 
   kdu_codestream *cs;
   kdu_compressed_source *source;
@@ -27,6 +28,10 @@ int main(void) {
   if (ret) return ret;
 
   kdu_codestream_get_size(cs, 0, &height, &width);
+
+  kdu_codestream_get_subsampling(cs, 0, &sampling_x, &sampling_y);
+  if (sampling_x != sampling_y || sampling_y != 1)
+    return 1;
 
   num_comps = kdu_codestream_get_num_components(cs);
 

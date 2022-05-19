@@ -126,6 +126,11 @@ int kdu_codestream_get_depth(kdu_codestream* cs,
 bool kdu_codestream_get_signed(kdu_codestream* cs,
                               int comp_idx);
 
+void kdu_codestream_get_subsampling(kdu_codestream* cs,
+                                    int comp_idx,
+                                    int* x,
+                                    int* y);
+    
 int kdu_codestream_create_from_target(mem_compressed_target* target,
                                       kdu_siz_params* sz,
                                       kdu_codestream** cs);
