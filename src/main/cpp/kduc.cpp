@@ -344,6 +344,17 @@ void kdu_codestream_get_size(kdu_codestream* cs,
   *width = dims.size.x;
 }
 
+
+void kdu_codestream_get_subsampling(kdu_codestream* cs,
+                                    int comp_idx,
+                                    int* x,
+                                    int* y) {
+  kdu_core::kdu_coords coords;
+  cs->get_min_subsampling(comp_idx, coords);
+  *x = coords.x;
+  *y = coords.y;
+}
+
 int kdu_codestream_get_num_components(kdu_codestream* cs) {
   return cs->get_num_components();
 }
