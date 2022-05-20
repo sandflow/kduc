@@ -194,8 +194,8 @@ int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
                                         const int* precisions,
                                         const int* pad_flags);
 
-int kdu_stripe_decompressor_pull_planar_stripe(kdu_stripe_decompressor* dec,
-                                               unsigned char** pixels,
+int kdu_stripe_decompressor_pull_stripe_planar(kdu_stripe_decompressor* dec,
+                                               unsigned char* pixels[],
                                                const int* stripe_heights,
                                                const int* sample_gaps,
                                                const int* row_gaps,
@@ -212,8 +212,8 @@ int kdu_stripe_decompressor_pull_stripe_16(kdu_stripe_decompressor* dec,
                                            const bool* is_signed,
                                            const int* pad_flags);
 
-int kdu_stripe_decompressor_pull_planar_stripe_16(kdu_stripe_decompressor* dec,
-                                                  int16_t** pixels,
+int kdu_stripe_decompressor_pull_stripe_planar_16(kdu_stripe_decompressor* dec,
+                                                  int16_t* pixels[],
                                                   const int* stripe_heights,
                                                   const int* sample_gaps,
                                                   const int* row_gaps,
@@ -264,6 +264,21 @@ int kdu_stripe_compressor_push_stripe_16(kdu_stripe_compressor* enc,
                                           const int* row_gaps,
                                           const int* precisions,
                                           const bool* is_signed);
+
+int kdu_stripe_compressor_push_stripe_planar(kdu_stripe_compressor* enc,
+                                             unsigned char* pixels[],
+                                             const int* stripe_heights,
+                                             const int* sample_gaps,
+                                             const int* row_gaps,
+                                             const int* precisions);
+
+int kdu_stripe_compressor_push_stripe_planar_16(kdu_stripe_compressor* enc,
+                                                int16_t* pixels[],
+                                                const int* stripe_heights,
+                                                const int* sample_gaps,
+                                                const int* row_gaps,
+                                                const int* precisions,
+                                                const bool* is_signed);
 
 int kdu_stripe_compressor_finish(kdu_stripe_compressor* enc);
 
