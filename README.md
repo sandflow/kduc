@@ -29,7 +29,7 @@ separate license for Kakadu SDK must be obained.
     cmake -DKDU_LIBRARY=<path to libkdu.a> \
           -DKDU_AUX_LIBRARY=<path to libkdu_aux.a> \
           -DKDU_INCLUDE_DIR=<path to Kakadu SDK include headers> \
-          -DCMAKE_INSTALL_PREFIX=<path where to install the kduc library>
+          -DCMAKE_INSTALL_PREFIX=<path where to install the kduc library> \
           ..
     ctest
     make install
