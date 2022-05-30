@@ -1,0 +1,21 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure and build
+        run: |
+          cmake -B ${{github.workspace}}/build
+          cmake --build ${{github.workspace}}/build
+
+      - name: Tests
+        working-directory: ${{github.workspace}}/build
+        run: |
+          ctest
