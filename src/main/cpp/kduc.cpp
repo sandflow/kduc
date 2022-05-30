@@ -146,18 +146,18 @@ int kdu_stripe_decompressor_pull_stripe(kdu_stripe_decompressor* dec,
                                         const int* precisions,
                                         const int* pad_flags) {
   return !dec->pull_stripe(pixels, stripe_heights, sample_offsets, sample_gaps,
-                             row_gaps, precisions, pad_flags);
+                           row_gaps, precisions, pad_flags);
 }
 
 int kdu_stripe_decompressor_pull_stripe_planar(kdu_stripe_decompressor* dec,
-                                        unsigned char** pixels,
-                                        const int* stripe_heights,
-                                        const int* sample_gaps,
-                                        const int* row_gaps,
-                                        const int* precisions,
-                                        const int *pad_flags) {
-
-  return !dec->pull_stripe(pixels, stripe_heights, sample_gaps, row_gaps, precisions, pad_flags);
+                                               unsigned char** pixels,
+                                               const int* stripe_heights,
+                                               const int* sample_gaps,
+                                               const int* row_gaps,
+                                               const int* precisions,
+                                               const int* pad_flags) {
+  return !dec->pull_stripe(pixels, stripe_heights, sample_gaps, row_gaps,
+                           precisions, pad_flags);
 }
 
 int kdu_stripe_decompressor_pull_stripe_16(kdu_stripe_decompressor* dec,
@@ -181,7 +181,8 @@ int kdu_stripe_decompressor_pull_stripe_planar_16(kdu_stripe_decompressor* dec,
                                                   const int* precisions,
                                                   const bool* is_signed,
                                                   const int* pad_flags) {
-  return !dec->pull_stripe(pixels, stripe_heights, sample_gaps, row_gaps, precisions, is_signed, pad_flags);
+  return !dec->pull_stripe(pixels, stripe_heights, sample_gaps, row_gaps,
+                           precisions, is_signed, pad_flags);
 }
 
 int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec) {
@@ -276,9 +277,8 @@ int kdu_stripe_compressor_start(kdu_stripe_compressor* enc,
                NULL,                     /* env_queue */
                -1,                       /* env_dbuf_height */
                -1,                       /* env_tile_concurrency */
-               opts->tolerance == 0,          /* trim_to_rate */
-               KDU_FLUSH_USES_THRESHOLDS_AND_SIZES
-    );
+               opts->tolerance == 0,     /* trim_to_rate */
+               KDU_FLUSH_USES_THRESHOLDS_AND_SIZES);
   } catch (kdu_core::kdu_exception& e) {
     return 1;
   }
@@ -303,13 +303,13 @@ int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
 }
 
 int kdu_stripe_compressor_push_stripe_16(kdu_stripe_compressor* enc,
-                                          int16_t* pixels,
-                                          const int* stripe_heights,
-                                          const int* sample_offsets,
-                                          const int* sample_gaps,
-                                          const int* row_gaps,
-                                          const int* precisions,
-                                          const bool* is_signed) {
+                                         int16_t* pixels,
+                                         const int* stripe_heights,
+                                         const int* sample_offsets,
+                                         const int* sample_gaps,
+                                         const int* row_gaps,
+                                         const int* precisions,
+                                         const bool* is_signed) {
   return !enc->push_stripe(pixels,         /* buffer */
                            stripe_heights, /* stripe_heights */
                            sample_offsets, /* sample_offsets */
@@ -330,7 +330,7 @@ int kdu_stripe_compressor_push_stripe_planar(kdu_stripe_compressor* enc,
                            stripe_heights, /* stripe_heights */
                            sample_gaps,    /* sample_gaps */
                            row_gaps,       /* row_gaps */
-                           precisions     /* precisions*/
+                           precisions      /* precisions*/
   );
 }
 
@@ -396,7 +396,6 @@ void kdu_codestream_get_size(kdu_codestream* cs,
   *width = dims.size.x;
 }
 
-
 void kdu_codestream_get_subsampling(kdu_codestream* cs,
                                     int comp_idx,
                                     int* x,
@@ -415,8 +414,7 @@ int kdu_codestream_get_depth(kdu_codestream* cs, int comp_idx) {
   return cs->get_bit_depth(comp_idx);
 }
 
-bool kdu_codestream_get_signed(kdu_codestream* cs,
-                              int comp_idx) {
+bool kdu_codestream_get_signed(kdu_codestream* cs, int comp_idx) {
   return cs->get_signed(comp_idx);
 }
 

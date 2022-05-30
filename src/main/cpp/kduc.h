@@ -27,8 +27,8 @@
 #ifndef KDUC_H
 #define KDUC_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 
@@ -83,7 +83,7 @@ typedef struct siz_params kdu_siz_params;
 
 /**
  * constants
- * 
+ *
  */
 
 #define KDU_MAX_LAYER_COUNT 32
@@ -120,17 +120,15 @@ void kdu_codestream_get_size(kdu_codestream* cs,
 
 int kdu_codestream_get_num_components(kdu_codestream* cs);
 
-int kdu_codestream_get_depth(kdu_codestream* cs,
-                             int comp_idx);
+int kdu_codestream_get_depth(kdu_codestream* cs, int comp_idx);
 
-bool kdu_codestream_get_signed(kdu_codestream* cs,
-                              int comp_idx);
+bool kdu_codestream_get_signed(kdu_codestream* cs, int comp_idx);
 
 void kdu_codestream_get_subsampling(kdu_codestream* cs,
                                     int comp_idx,
                                     int* x,
                                     int* y);
-    
+
 int kdu_codestream_create_from_target(mem_compressed_target* target,
                                       kdu_siz_params* sz,
                                       kdu_codestream** cs);
@@ -227,15 +225,14 @@ int kdu_stripe_decompressor_finish(kdu_stripe_decompressor* dec);
  * kdu_stripe_compressor
  */
 
-
 typedef struct kdu_stripe_compressor_options {
-  bool force_precise; /* 0 or 1 */
-  bool want_fastest;  /* 0 or 1 */
-  float tolerance;   /* [0..0.5] */
-  int rate_count;    /* [0..KDU_MAX_LAYER_COUNT] */
-  float rate[KDU_MAX_LAYER_COUNT];
-  int slope_count; /* [0..KDU_MAX_LAYER_COUNT] */
-  int slope[KDU_MAX_LAYER_COUNT];
+  bool force_precise;
+  bool want_fastest;
+  float tolerance;                    /* [0..0.5] */
+  int rate_count;                     /* [0..KDU_MAX_LAYER_COUNT] */
+  float rate[KDU_MAX_LAYER_COUNT];    /* target compression in bpp (see `-rate` in `kdu_compress`) */
+  int slope_count;                    /* [0..KDU_MAX_LAYER_COUNT] */
+  int slope[KDU_MAX_LAYER_COUNT];     /* distortion-length slope (see `kdu_stripe_compressor.h`) */
 } kdu_stripe_compressor_options;
 
 void kdu_stripe_compressor_options_init(kdu_stripe_compressor_options* opts);
@@ -257,13 +254,13 @@ int kdu_stripe_compressor_push_stripe(kdu_stripe_compressor* enc,
                                       const int* precisions);
 
 int kdu_stripe_compressor_push_stripe_16(kdu_stripe_compressor* enc,
-                                          int16_t* pixels,
-                                          const int* stripe_heights,
-                                          const int* sample_offsets,
-                                          const int* sample_gaps,
-                                          const int* row_gaps,
-                                          const int* precisions,
-                                          const bool* is_signed);
+                                         int16_t* pixels,
+                                         const int* stripe_heights,
+                                         const int* sample_offsets,
+                                         const int* sample_gaps,
+                                         const int* row_gaps,
+                                         const int* precisions,
+                                         const bool* is_signed);
 
 int kdu_stripe_compressor_push_stripe_planar(kdu_stripe_compressor* enc,
                                              unsigned char* pixels[],
