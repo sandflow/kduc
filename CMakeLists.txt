@@ -28,6 +28,7 @@ endif()
 include_directories(src/main/cpp)
 
 add_library(kduc SHARED src/main/cpp/kduc.cpp)
+set_property(TARGET kduc PROPERTY C_STANDARD 99)
 target_link_libraries(kduc ${KDU_LIBRARY} ${KDU_AUX_LIBRARY} pthread ${CMAKE_DL_LIBS} stdc++ m)
 
 install(TARGETS kduc LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
