@@ -35,6 +35,12 @@ void print_message(const char* msg) {
   fflush(stdout);
 }
 
+void exit_with_error(const char* msg) {
+  printf("%s", msg);
+  fflush(stdout);
+  exit(-1);
+}
+
 int main(void) {
   int height = 480;
   int width = 640;
@@ -52,8 +58,8 @@ int main(void) {
 
   /* register message handlers */
 
-  kdu_register_error_handler(&print_message);
-  kdu_register_warning_handler(&print_message);
+  kdu_register_error_handler(&exit_with_error);
+  kdu_register_warning_handler(&exit_with_error);
   kdu_register_info_handler(&print_message);
 
   /* create image */
@@ -99,6 +105,19 @@ int main(void) {
   ret = kdu_codestream_parse_params(cs, "Qfactor=85");
   if (ret)
     return ret;
+
+  ret = kdu_codestream_parse_params(cs, "Corder=CPRL");
+  if (ret)
+    return ret;
+
+  ret = kdu_codestream_parse_params(cs, "ORGtparts=C");
+  if (ret)
+    return ret;
+
+  ret = kdu_codestream_parse_params(cs, "ORGgen_tlm=3");
+  if (ret)
+    return ret;
+
 
   /* compressor */
 

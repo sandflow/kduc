@@ -35,6 +35,7 @@
 #include <vector>
 #include "kdu_stripe_compressor.h"
 #include "kdu_stripe_decompressor.h"
+#include "kdu_elementary.h"
 
 typedef kdu_supp::kdu_stripe_decompressor kdu_stripe_decompressor;
 typedef kdu_supp::kdu_stripe_compressor kdu_stripe_compressor;
@@ -44,7 +45,7 @@ typedef kdu_core::siz_params kdu_siz_params;
 
 class mem_compressed_target : public kdu_core::kdu_compressed_target {
  public:
-  mem_compressed_target() {}
+  mem_compressed_target(): backtrack(-1) {}
 
   bool close() {
     this->buf.clear();
@@ -52,7 +53,15 @@ class mem_compressed_target : public kdu_core::kdu_compressed_target {
   }
 
   bool write(const kdu_core::kdu_byte* buf, int num_bytes) {
-    std::copy(buf, buf + num_bytes, std::back_inserter(this->buf));
+    if (this->backtrack < 0) {
+      std::copy(buf, buf + num_bytes, std::back_inserter(this->buf));
+    } else if (num_bytes > this->backtrack) {
+      return false;
+    } else {
+      std::copy(buf, buf + num_bytes, this->buf.end() - this->backtrack);
+      this->backtrack -= num_bytes;
+    }
+
     return true;
   }
 
@@ -64,8 +73,24 @@ class mem_compressed_target : public kdu_core::kdu_compressed_target {
 
   std::vector<uint8_t>& get_buffer() { return this->buf; }
 
+  bool start_rewrite(kdu_core::kdu_long backtrack) {
+    if (backtrack > this->buf.size() || backtrack < 0)
+      return false;
+
+    this->backtrack = backtrack;
+  }
+
+  bool end_rewrite() {
+    if (this->backtrack < -1)
+      return false;
+
+    this->backtrack = -1;
+    return true;
+  }
+
  private:
   std::vector<uint8_t> buf;
+  kdu_core::kdu_long backtrack;
 };
 
 extern "C" {
