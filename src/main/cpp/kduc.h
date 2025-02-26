@@ -78,6 +78,7 @@ class mem_compressed_target : public kdu_core::kdu_compressed_target {
       return false;
 
     this->backtrack = backtrack;
+    return true;
   }
 
   bool end_rewrite() {
