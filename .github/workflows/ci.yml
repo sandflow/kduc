@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Required so the job can request a GitHub OIDC token to assume the AWS role.
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  # Repository (or org) variables -- see README/CONTRIBUTING for setup notes.
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  KDU_SDK_S3_URI: s3://ffmpeg-kdu/kdu-sdk/v8_7-01908E.zip
+  KDU_SDK_DIR: v8_7-01908E
+  KDU_PLATFORM: Linux-x86-64-gcc
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out kduc
+        uses: actions/checkout@v4
+
+      - name: Assume AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Fetch Kakadu SDK from S3
+        run: |
+          aws s3 cp "$KDU_SDK_S3_URI" kdu-sdk.zip
+          unzip -q kdu-sdk.zip
+
+      - name: Build Kakadu SDK static libraries
+        env:
+          KDU_STATIC_BUILD: "1"
+        run: make -C "$KDU_SDK_DIR/make" -f "Makefile-$KDU_PLATFORM" all_but_jni
+
+      - name: Configure kduc
+        run: |
+          cmake -S . -B build \
+            -DKDU_LIBRARY="$GITHUB_WORKSPACE/$KDU_SDK_DIR/lib/$KDU_PLATFORM/libkdu.a" \
+            -DKDU_AUX_LIBRARY="$GITHUB_WORKSPACE/$KDU_SDK_DIR/lib/$KDU_PLATFORM/libkdu_aux.a" \
+            -DKDU_INCLUDE_DIR="$GITHUB_WORKSPACE/$KDU_SDK_DIR/managed/all_includes" \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install"
+
+      - name: Build kduc
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Run unit tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Install
+        run: cmake --install build
