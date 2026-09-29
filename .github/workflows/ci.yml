@@ -13,8 +13,7 @@ permissions:
 env:
   # Repository (or org) variables -- see README/CONTRIBUTING for setup notes.
   AWS_REGION: ${{ vars.AWS_REGION }}
-  KDU_SDK_S3_URI: s3://ffmpeg-kdu/kdu-sdk/v8_7-01908E.zip
-  KDU_SDK_DIR: v8_7-01908E
+  KDU_SDK_S3_URI: ${{ vars.KDU_SDK_S3_URI }}
   KDU_PLATFORM: Linux-x86-64-gcc
 
 jobs:
@@ -34,6 +33,7 @@ jobs:
         run: |
           aws s3 cp "$KDU_SDK_S3_URI" kdu-sdk.zip
           unzip -q kdu-sdk.zip
+          echo "KDU_SDK_DIR=$(basename "$KDU_SDK_S3_URI" .zip)" >> "$GITHUB_ENV"
 
       - name: Build Kakadu SDK static libraries
         env:
