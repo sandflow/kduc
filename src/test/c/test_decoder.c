@@ -26,6 +26,7 @@
 
 #include <kduc.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(void) {
   int height;
@@ -44,7 +45,9 @@ int main(void) {
   const long size = ftell(j2c_file);
   fseek(j2c_file, 0L, SEEK_SET);
 
-  unsigned char j2c_buffer[size];
+  unsigned char* j2c_buffer = malloc(size);
+  if (!j2c_buffer)
+    return 1;
   fread(j2c_buffer, size, 1, j2c_file);
 
   ret = kdu_compressed_source_buffered_new(&j2c_buffer[0], size, &source);
@@ -64,7 +67,9 @@ int main(void) {
   ret = kdu_stripe_decompressor_new(&d);
   if (ret) return ret;
 
-  unsigned char pixels[width * height * num_comps];
+  unsigned char* pixels = malloc(width * height * num_comps);
+  if (!pixels)
+    return 1;
 
   int stripe_heights[4] = {height, height, height, height};
   int precisions[4] = {8, 8, 8, 8};
@@ -89,6 +94,10 @@ int main(void) {
   kdu_codestream_delete(cs);
 
   kdu_compressed_source_buffered_delete(source);
+
+  free(j2c_buffer);
+
+  free(pixels);
 
   return 0;
 }

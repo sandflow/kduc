@@ -31,6 +31,7 @@ separate license for Kakadu SDK must be obained.
           -DKDU_INCLUDE_DIR=<path to Kakadu SDK include headers> \
           -DCMAKE_INSTALL_PREFIX=<path where to install the kduc library> \
           ..
+    make
     ctest
     make install
 

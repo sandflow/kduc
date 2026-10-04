@@ -14,11 +14,12 @@ env:
   # Repository (or org) variables -- see README/CONTRIBUTING for setup notes.
   AWS_REGION: ${{ vars.AWS_REGION }}
   KDU_SDK_S3_URI: ${{ vars.KDU_SDK_S3_URI }}
-  KDU_PLATFORM: Linux-x86-64-gcc
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KDU_PLATFORM: Linux-x86-64-gcc
     steps:
       - name: Check out kduc
         uses: actions/checkout@v4
@@ -56,3 +57,56 @@ jobs:
 
       - name: Install
         run: cmake --install build
+
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out kduc
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Assume AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Fetch Kakadu SDK from S3
+        run: |
+          aws s3 cp "$KDU_SDK_S3_URI" kdu-sdk.zip
+          7z x -bd kdu-sdk.zip > /dev/null
+          echo "KDU_SDK_DIR=$(basename "$KDU_SDK_S3_URI" .zip)" >> "$GITHUB_ENV"
+
+      # The Visual Studio projects build DLLs and write them, and their import
+      # libraries, to bin_x64 and lib_x64 next to the SDK directory.
+      # setup-msbuild only makes msbuild visible to PowerShell/cmd, not Git Bash
+      - name: Build Kakadu SDK DLLs
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          msbuild "$env:KDU_SDK_DIR/coresys/coresys_2022.sln" -p:Configuration=Release -p:Platform=x64 -m -v:minimal
+          msbuild "$env:KDU_SDK_DIR/managed/kdu_managed_2022.sln" -t:kdu_aux -p:Configuration=Release -p:Platform=x64 -m -v:minimal
+          "$env:GITHUB_WORKSPACE\bin_x64" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Configure kduc
+        run: |
+          WS=$(cygpath -m "$GITHUB_WORKSPACE")
+          cmake -S . -B build \
+            -DKDU_LIBRARY="$(ls "$WS"/lib_x64/kdu_v*R.lib)" \
+            -DKDU_AUX_LIBRARY="$(ls "$WS"/lib_x64/kdu_a*R.lib)" \
+            -DKDU_INCLUDE_DIR="$WS/$KDU_SDK_DIR/managed/all_includes" \
+            -DCMAKE_INSTALL_PREFIX="$WS/install"
+
+      - name: Build kduc
+        run: cmake --build build --config Release
+
+      - name: Run unit tests
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Install
+        run: cmake --install build --config Release
