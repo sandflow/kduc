@@ -32,6 +32,7 @@
 
 #ifdef __cplusplus
 
+#include <iterator>
 #include <vector>
 #include "kdu_stripe_compressor.h"
 #include "kdu_stripe_decompressor.h"

@@ -48,7 +48,9 @@ int main(void) {
   const long size = ftell(j2c_file);
   fseek(j2c_file, 0L, SEEK_SET);
 
-  unsigned char j2c_buffer[size];
+  unsigned char* j2c_buffer = malloc(size);
+  if (!j2c_buffer)
+    return 1;
   fread(j2c_buffer, size, 1, j2c_file);
 
   ret = kdu_compressed_source_buffered_new(&j2c_buffer[0], size, &source);
@@ -114,6 +116,8 @@ int main(void) {
   kdu_codestream_delete(cs);
 
   kdu_compressed_source_buffered_delete(source);
+
+  free(j2c_buffer);
 
   free(y_pixels);
 
