@@ -62,7 +62,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: bash
+        shell: cmd
     steps:
       - name: Check out kduc
         uses: actions/checkout@v4
@@ -78,29 +78,29 @@ jobs:
 
       - name: Fetch Kakadu SDK from S3
         run: |
-          aws s3 cp "$KDU_SDK_S3_URI" kdu-sdk.zip
-          7z x -bd kdu-sdk.zip > /dev/null
-          echo "KDU_SDK_DIR=$(basename "$KDU_SDK_S3_URI" .zip)" >> "$GITHUB_ENV"
+          aws s3 cp "%KDU_SDK_S3_URI%" kdu-sdk.zip || exit /b 1
+          7z x -bd kdu-sdk.zip > nul || exit /b 1
+          set "SDK_URI=%KDU_SDK_S3_URI:/=\%"
+          for %%F in ("%SDK_URI%") do echo KDU_SDK_DIR=%%~nF>>"%GITHUB_ENV%"
 
       # The Visual Studio projects build DLLs and write them, and their import
       # libraries, to bin_x64 and lib_x64 next to the SDK directory.
-      # setup-msbuild only makes msbuild visible to PowerShell/cmd, not Git Bash
       - name: Build Kakadu SDK DLLs
-        shell: pwsh
         run: |
-          $PSNativeCommandUseErrorActionPreference = $true
-          msbuild "$env:KDU_SDK_DIR/coresys/coresys_2022.sln" -p:Configuration=Release -p:Platform=x64 -m -v:minimal
-          msbuild "$env:KDU_SDK_DIR/managed/kdu_managed_2022.sln" -t:kdu_aux -p:Configuration=Release -p:Platform=x64 -m -v:minimal
-          "$env:GITHUB_WORKSPACE\bin_x64" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          msbuild "%KDU_SDK_DIR%\coresys\coresys_2022.sln" -p:Configuration=Release -p:Platform=x64 -m -v:minimal || exit /b 1
+          msbuild "%KDU_SDK_DIR%\managed\kdu_managed_2022.sln" -t:kdu_aux -p:Configuration=Release -p:Platform=x64 -m -v:minimal || exit /b 1
+          echo %GITHUB_WORKSPACE%\bin_x64>>"%GITHUB_PATH%"
 
       - name: Configure kduc
         run: |
-          WS=$(cygpath -m "$GITHUB_WORKSPACE")
-          cmake -S . -B build \
-            -DKDU_LIBRARY="$(ls "$WS"/lib_x64/kdu_v*R.lib)" \
-            -DKDU_AUX_LIBRARY="$(ls "$WS"/lib_x64/kdu_a*R.lib)" \
-            -DKDU_INCLUDE_DIR="$WS/$KDU_SDK_DIR/managed/all_includes" \
-            -DCMAKE_INSTALL_PREFIX="$WS/install"
+          set "WS=%GITHUB_WORKSPACE:\=/%"
+          for %%F in ("%GITHUB_WORKSPACE%\lib_x64\kdu_v*R.lib") do set "KDU_LIB=%%F"
+          for %%F in ("%GITHUB_WORKSPACE%\lib_x64\kdu_a*R.lib") do set "KDU_AUX_LIB=%%F"
+          cmake -S . -B build ^
+            -DKDU_LIBRARY="%KDU_LIB:\=/%" ^
+            -DKDU_AUX_LIBRARY="%KDU_AUX_LIB:\=/%" ^
+            -DKDU_INCLUDE_DIR="%WS%/%KDU_SDK_DIR%/managed/all_includes" ^
+            -DCMAKE_INSTALL_PREFIX="%WS%/install"
 
       - name: Build kduc
         run: cmake --build build --config Release
