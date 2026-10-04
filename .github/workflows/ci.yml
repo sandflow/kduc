@@ -84,11 +84,14 @@ jobs:
 
       # The Visual Studio projects build DLLs and write them, and their import
       # libraries, to bin_x64 and lib_x64 next to the SDK directory.
+      # setup-msbuild only makes msbuild visible to PowerShell/cmd, not Git Bash
       - name: Build Kakadu SDK DLLs
+        shell: pwsh
         run: |
-          msbuild "$KDU_SDK_DIR/coresys/coresys_2022.sln" -p:Configuration=Release -p:Platform=x64 -m -v:minimal
-          msbuild "$KDU_SDK_DIR/managed/kdu_managed_2022.sln" -t:kdu_aux -p:Configuration=Release -p:Platform=x64 -m -v:minimal
-          echo "$GITHUB_WORKSPACE\\bin_x64" >> "$GITHUB_PATH"
+          $PSNativeCommandUseErrorActionPreference = $true
+          msbuild "$env:KDU_SDK_DIR/coresys/coresys_2022.sln" -p:Configuration=Release -p:Platform=x64 -m -v:minimal
+          msbuild "$env:KDU_SDK_DIR/managed/kdu_managed_2022.sln" -t:kdu_aux -p:Configuration=Release -p:Platform=x64 -m -v:minimal
+          "$env:GITHUB_WORKSPACE\bin_x64" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
       - name: Configure kduc
         run: |
